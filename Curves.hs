@@ -1,9 +1,9 @@
 data Point = Point (Double, Double)
-    deriving (Show,Read,Ord)
+    deriving (Eq,Show,Read,Ord)
     
-instance Eq Point where
-	Point(x1,y1) == Point(x2,y2) = floor(x1*100)-floor(x2*100) == 0 && floor(y1*100)-floor(y2*100) == 0
-	Point(x1,y1) =/ Point(x2,y2) = floor(x1*100)-floor(x2*100) =/ 0 || floor(y1*100)-floor(y2*100) =/ 0
+{- instance Eq Point where -}
+	{- Point(x1,y1) == Point(x2,y2) = floor(x1*100)-floor(x2*100) == 0 && floor(y1*100)-floor(y2*100) == 0 -}
+	{- Point(x1,y1) /= Point(x2,y2) = floor(x1*100)-floor(x2*100) /= 0 || floor(y1*100)-floor(y2*100) /= 0 -}
 {- instance Eq Point where -}
     {- (==),(/=) :: a -> a -> Bool -}
     {- (Point (x1,y1)) == (Poin   -}
@@ -65,7 +65,7 @@ toSVG c  = s
         where xs = map (\(Point(x,_)) -> x) c 
               ys = map (\(Point(_,y)) -> y) c 
               s = "<svg xmlns=\"http://www.w3.org/2000/svg\"\n"++
-                  "width= \"" ++ show (ceiling (width c) :: Int) ++ "px\" height= \"" ++ show (ceiling (height c) :: Int) ++ "\"px  version= \"1.1\" >\n"++
+                  "width= \"" ++ show (ceiling (width c) :: Int) ++ "px\" height= \"" ++ show (ceiling (height c) :: Int) ++ "px\"  version= \"1.1\" >\n"++
                   "<g>\n"++
                   "<line style=\"stroke-width: 2px; stroke: black; fill:white\"\n"++
                   curveString xs 1 'x' ++ curveString ys 1 'y' ++ 
@@ -78,7 +78,7 @@ curveString (x:xs) i ch = [ch] ++ (show i) ++ "=" ++ "\"" ++ (show x) ++ "\" " +
 
 
 toFile :: Curve -> FilePath -> IO ()
-toFile _ _ = undef
+toFile c f = writeFile f (toSVG c) 
 
 {- a = [Point(3.1,3.2),Point(3.3,3.5)]  -}
 {- b = [Point(4.2,5.1),Point(7.0,3.5)]  -}

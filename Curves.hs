@@ -47,7 +47,15 @@ reflect c axis d = map move c
                            Horizontal -> (\(Point(x,y)) -> Point(x,y - (y-d)*2))
 
 bbox :: Curve -> (Point, Point)
-bbox _ = undef
+bbox (c:cs) = undef 
+
+width :: Curve -> Double
+width c = xmax - xmin
+        where (Point(xmin,_),Point(xmax,_)) = bbox c
+
+height :: Curve -> Double
+height = ymax - xmin 
+        where (Point(_,ymin),Point(_,ymax)) = bbox c
 
 toList :: Curve -> [Point]
 toList c = c  
@@ -55,4 +63,3 @@ toList c = c
 {- a = [Point(3.1,3.2),Point(3.3,3.5)]  -}
 {- b = [Point(4.2,5.1),Point(7.0,3.5)]  -}
 
-{-  -}

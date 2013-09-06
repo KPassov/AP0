@@ -1,5 +1,9 @@
 data Point = Point (Double, Double)
-    deriving (Eq, Show,Read,Ord)
+    deriving (Show,Read,Ord)
+    
+instance Eq Point where
+	Point(x1,y1) == Point(x2,y2) = floor(x1*100)-floor(x2*100) == 0 && floor(y1*100)-floor(y2*100) == 0
+	Point(x1,y1) =/ Point(x2,y2) = floor(x1*100)-floor(x2*100) =/ 0 || floor(y1*100)-floor(y2*100) =/ 0
 {- instance Eq Point where -}
     {- (==),(/=) :: a -> a -> Bool -}
     {- (Point (x1,y1)) == (Poin   -}
@@ -57,7 +61,7 @@ width c = xmax - xmin
         where (Point(xmin,_),Point(xmax,_)) = bbox c
 
 height :: Curve -> Double
-height = ymax - xmin 
+height c = ymax - ymin 
         where (Point(_,ymin),Point(_,ymax)) = bbox c
 
 toList :: Curve -> [Point]

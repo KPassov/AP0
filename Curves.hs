@@ -1,3 +1,5 @@
+import Text.Printf
+
 data Point = Point (Double, Double)
     deriving (Eq,Show,Read,Ord)
     
@@ -62,23 +64,38 @@ toList c = c
 
 toSVG :: Curve -> String
 toSVG c  = s 
-        where xs = map (\(Point(x,_)) -> x) c 
-              ys = map (\(Point(_,y)) -> y) c 
-              s = "<svg xmlns=\"http://www.w3.org/2000/svg\"\n"++
+        where s = "<svg xmlns=\"http://www.w3.org/2000/svg\"\n"++
                   "width= \"" ++ show (ceiling (width c) :: Int) ++ "px\" height= \"" ++ show (ceiling (height c) :: Int) ++ "px\"  version= \"1.1\" >\n"++
                   "<g>\n"++
-                  "<line style=\"stroke-width: 2px; stroke: black; fill:white\"\n"++
-                  curveString xs 1 'x' ++ curveString ys 1 'y' ++ 
-                  "/>\n</g>\n"++
+                  lineString c ++ 
+                  "</g>\n"++
                   "</svg>"
 
-curveString :: [Double] -> Int -> Char -> String
-curveString [] _ _ = ""
-curveString (x:xs) i ch = [ch] ++ (show i) ++ "=" ++ "\"" ++ (show x) ++ "\" " ++ (curveString xs (i+1) ch)
+lineString :: Curve -> String
+lineString ((Point(x1,y1)):cs@(Point(x2,y2)):css) = s ++ x1s ++ x2s ++ y1s ++ y2s ++ " /> \n"
+        where s = "<line style=\"stroke-width: 2px; stroke: black; fill:white\"\n"
+            x1s = printf "x1=\"%.2f\" " x1 :: String
+            x2s = printf "x2=\"%.2f\" " x2 :: String
+            y1s = printf "y1=\"%.2f\" " y1 :: String
+            y2s = printf "y2=\"%.2f\" " y2 :: String
+lineString _ = ""
 
 
 toFile :: Curve -> FilePath -> IO ()
 toFile c f = writeFile f (toSVG c) 
+
+hilbert :: Curve -> Curve
+hilbert c = c0 `connect` c1 `connect` c2 `connect` c3
+   where  w = width c
+          h = height c
+          p = 6
+
+          ch = reflect c Horizontal 0
+
+          c0 = ch `rotate` (-90) `translate` (point (w+p+w, h+p+h))
+          c1 = c `translate` (point (w+p+w, h))
+          c2 = c
+          c3 = ch `rotate` 90 `translate` (point (0, h+p))
 
 {- a = [Point(3.1,3.2),Point(3.3,3.5)]  -}
 {- b = [Point(4.2,5.1),Point(7.0,3.5)]  -}

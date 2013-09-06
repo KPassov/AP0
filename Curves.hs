@@ -4,13 +4,6 @@ data Point = Point (Double, Double)
     {- (==),(/=) :: a -> a -> Bool -}
     {- (Point (x1,y1)) == (Poin   -}
 
-{- instance Num Point where -}
-    {- Point(x1,x2) + Point(y1,y2) = Point(x1+y1,x2+y2)  -}
-    {- Point(x1,x2) - Point(y1,y2) = Point(x1-y1,x2-y2)  -}
-    {- (*) = undef     -}
-    {- abs = undef     -}
-    {- signum = undef     -}
-    {- fromInteger = undef     -}
 
 undef :: t
 undef = undef
@@ -57,14 +50,28 @@ width c = xmax - xmin
         where (Point(xmin,_),Point(xmax,_)) = bbox c
 
 height :: Curve -> Double
-height = ymax - xmin 
+height c = ymax - ymin 
         where (Point(_,ymin),Point(_,ymax)) = bbox c
 
 toList :: Curve -> [Point]
 toList c = c  
 
 toSVG :: Curve -> String
-toSVG _ = undef
+toSVG c  = s 
+        where xs = map (\(Point(x,_)) -> x) c 
+              ys = map (\(Point(_,y)) -> y) c 
+              s = "<svg xmlns=\"http://www.w3.org/2000/svg\"\n"++
+                  "width= \"" ++ show (ceiling (width c) :: Int) ++ "px\" height= \"" ++ show (ceiling (height c) :: Int) ++ "\"px  version= \"1.1\" >\n"++
+                  "<g>\n"++
+                  "<line style=\"stroke-width: 2px; stroke: black; fill:white\"\n"++
+                  curveString xs 1 'x' ++ curveString ys 1 'y' ++ 
+                  "/>\n</g>\n"++
+                  "</svg>"
+
+curveString :: [Double] -> Int -> Char -> String
+curveString [] _ _ = ""
+curveString (x:xs) i ch = [ch] ++ (show i) ++ "=" ++ "\"" ++ (show x) ++ "\" " ++ (curveString xs (i+1) ch)
+
 
 toFile :: Curve -> FilePath -> IO ()
 toFile _ _ = undef

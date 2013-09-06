@@ -47,7 +47,10 @@ reflect c axis d = map move c
                            Horizontal -> (\(Point(x,y)) -> Point(x,y - (y-d)*2))
 
 bbox :: Curve -> (Point, Point)
-bbox (c:cs) = undef 
+bbox [] = (Point(0,0),Point(0,0))
+bbox (c:cs) = foldl findbbox (c,c) cs
+	where findbbox = \((Point(minx,miny),Point(maxx,maxy))) (Point(x,y)) -> 
+					 ((Point(min minx x, min miny y), Point(max maxx x, max maxy y)))
 
 width :: Curve -> Double
 width c = xmax - xmin

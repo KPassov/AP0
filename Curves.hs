@@ -60,6 +60,12 @@ height = ymax - xmin
 toList :: Curve -> [Point]
 toList c = c  
 
+toSVG :: Curve -> String
+toSVG _ = undef
+
+toFile :: Curve -> FilePath -> IO ()
+toFile _ _ = undef
+
 {- a = [Point(3.1,3.2),Point(3.3,3.5)]  -}
 {- b = [Point(4.2,5.1),Point(7.0,3.5)]  -}
 

@@ -1,23 +1,16 @@
+module Curves
+
 import Text.Printf
 
 data Point = Point (Double, Double)
     deriving (Eq,Show,Read,Ord)
     
-{- instance Eq Point where -}
-	{- Point(x1,y1) == Point(x2,y2) = floor(x1*100)-floor(x2*100) == 0 && floor(y1*100)-floor(y2*100) == 0 -}
-	{- Point(x1,y1) /= Point(x2,y2) = floor(x1*100)-floor(x2*100) /= 0 || floor(y1*100)-floor(y2*100) /= 0 -}
-{- instance Eq Point where -}
-    {- (==),(/=) :: a -> a -> Bool -}
-    {- (Point (x1,y1)) == (Poin   -}
+type Curve = [Point]
 
-
-undef :: t
-undef = undef
+data Axis = Verticle | Horizontal
 
 point:: (Double, Double) -> Point
 point (a,b) = Point (a,b)
-
-type Curve = [Point]
 
 curve:: Point -> [Point] -> Curve
 curve p x = p:x
@@ -37,7 +30,6 @@ translate c@((Point(cx,cy)):_) (Point (px,py)) = map move c
             where move    = (\(Point (x1,x2)) -> Point (x1-dx,x2-dy))
                   (dx,dy) = (cx-px,cy-py)
                    
-data Axis = Verticle | Horizontal
 
 reflect :: Curve -> Axis -> Double -> Curve
 reflect c axis d = map move c  
@@ -65,21 +57,23 @@ toList c = c
 toSVG :: Curve -> String
 toSVG c  = s 
         where s = "<svg xmlns=\"http://www.w3.org/2000/svg\"\n"++
-                  "width= \"" ++ show (ceiling (width c) :: Int) ++ "px\" height= \"" ++ show (ceiling (height c) :: Int) ++ "px\"  version= \"1.1\" >\n"++
+                  "width= \"" ++ printf "%d"(ceiling (width c) :: Int) ++ 
+                  "px\" height= \"" ++ printf "%d" (ceiling (height c) :: Int) ++ 
+                  "px\"  version= \"1.1\" >\n"++
                   "<g>\n"++
                   lineString c ++ 
                   "</g>\n"++
                   "</svg>"
 
 lineString :: Curve -> String
-lineString ((Point(x1,y1)):cs@(Point(x2,y2)):css) = s ++ x1s ++ x2s ++ y1s ++ y2s ++ " /> \n"
-        where s = "<line style=\"stroke-width: 2px; stroke: black; fill:white\"\n"
-            x1s = printf "x1=\"%.2f\" " x1 :: String
-            x2s = printf "x2=\"%.2f\" " x2 :: String
-            y1s = printf "y1=\"%.2f\" " y1 :: String
-            y2s = printf "y2=\"%.2f\" " y2 :: String
+lineString ((Point(x1,y1)):cs@(Point(x2,y2)):css) = 
+                            "<line style=\"stroke-width: 2px; stroke: black; fill:white\"\n" 
+                            ++ x1s ++ x2s ++ y1s ++ y2s ++ " /> \n" ++ lineString (cs:css) 
+        where x1s = printf "x1=\"%.2f\" " x1 :: String
+              x2s = printf "x2=\"%.2f\" " x2 :: String
+              y1s = printf "y1=\"%.2f\" " y1 :: String
+              y2s = printf "y2=\"%.2f\" " y2 :: String
 lineString _ = ""
-
 
 toFile :: Curve -> FilePath -> IO ()
 toFile c f = writeFile f (toSVG c) 
@@ -96,7 +90,3 @@ hilbert c = c0 `connect` c1 `connect` c2 `connect` c3
           c1 = c `translate` (point (w+p+w, h))
           c2 = c
           c3 = ch `rotate` 90 `translate` (point (0, h+p))
-
-{- a = [Point(3.1,3.2),Point(3.3,3.5)]  -}
-{- b = [Point(4.2,5.1),Point(7.0,3.5)]  -}
-

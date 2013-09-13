@@ -1,4 +1,4 @@
-module Curves
+module Curves where
 
 import Text.Printf
 

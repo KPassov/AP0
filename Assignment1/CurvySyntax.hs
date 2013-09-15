@@ -1,45 +1,37 @@
 module CurvySyntax where
 
+import Data.Char(isDigit)
 import CurveAST
+import SimpleParse
 
-data Parser a = Parser (String -> [(a,String)])
+add    = mult   `chainl1` (char '+' >> return Add)
+mult   = number `chainl1` (char '*' >> return Add)
 
-parse :: Parser a -> String -> [(a, String)]
-parse (Parser p) = p
+{- width  = curve `chainl1` (char '+' >> return Add) -}
+{- height = curve `chainl1` (char '+' >> return Add) -}
 
+{- expr :: Parser Expr -}
+{- expr = (do   -}
+           {- expv1 <- expr -}
+           {- expv2 <- expr -}
+           {- return expv1 )  -}
+   {- <|> (do num <- number -}
+           {- return num) -}
+  {- where plusop = (do symbol "+" -}
+                     {- return Add) -}
 
+number :: Parser Number
+number = token (do pre <- digits
+                   char '.'
+                   post <- digits
+                   return $ read $ pre ++ "." ++ post)
+         where digits = many1(satisfy isDigit)  
 
-instance Monad Parser where
-    return a = Parser (\cs -> [(a,cs)])
-    p >>= f  = Parser (\cs -> concat  [parse (f a) cs' |
+type Error = String
+{- parseString :: String -> Either Error Program -}
+parseString input = parse (do exprv <- expr
+                              token eof
+                              return exprv) input 
 
-    (<++) :: Parser a -> Parser a -> Parser a
-    p <++ q = Parser (\cs -> case parse p cs of 
-                                    [] -> parse q cs   
-                                    res <- res)
-
-class Monad m => MonadZero m where
-      zero :: m a
- 
-class MonadZero m => MonadPlus m where
-      (++) :: m a -> m a -> m a
-
-instance MonadZero Parser where
-      zero = Parser (\cs -> [])
-
-item :: Parser Char
-item =  Parser (\cs -> case cs of
-                       ""     -> []
-                       (c:cs') -> [(c,cs')])
-
-
-
-undef :: t
-undef = undef
-data Error = String | Nothing 
-
-parseString :: String -> Either Error Program
-parseString _ = undef
-
-parseFile :: FilePath -> IO (Either Error Program)
-parseFile _ = undef
+{- parseFile :: FilePath -> IO (Either Error Program) -}
+{- parseFile _ = undef -}

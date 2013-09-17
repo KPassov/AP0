@@ -1,4 +1,4 @@
-module Curves where
+module Curves where 
 -- OLEKS -1: Consider limiting the module to not export garbage, i.e. your
 -- module should _only_ export those functions that we ask for. See
 -- http://www.haskell.org/tutorial/modules.html

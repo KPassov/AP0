@@ -104,7 +104,7 @@ p `sepBy1` sep   = do {a <- p; as <- many (do {sep; p}); return (a:as)}
 chainl          :: Parser a -> Parser (a -> a -> a) -> a -> Parser a
 chainl p op a    = (p `chainl1` op) <|> return a
 
-chainl1         :: Parser a -> Parser (a -> a -> a) -> SimpleParse.hs
+chainl1         :: Parser a -> Parser (a -> a -> a) -> Parser a
 p `chainl1` op   = do a <- p
                       rest a
                    where

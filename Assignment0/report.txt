@@ -1,0 +1,15 @@
+Assignment 0
+
+datatypes
+     Curve
+        We gave Curve the type Point [Point] to avoid an empty list of points
+        being recognised as a curve. 
+     Axis
+        In this iteration we chose not to misspell Verticle to avoid confusion
+
+We tested the hilbert function that produced the output seen in hilbert.xml,
+furthermore we tested the functions individualy using manual tests in the
+console. We were unable to find any bugs, but we are not confident it will be
+correct for all inputs. 
+
+

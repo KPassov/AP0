@@ -4,31 +4,54 @@ import Data.Char(isDigit)
 import CurveAST
 import SimpleParse
 
-curveList :: Parser Curve
-curveList = do schar '('
-               c <- curve
-               schar ')'
-               return c 
+program :: Parser [Def]
+program = defs
 
+defs :: Parser [Def]
+defs = do d <- def
+          ds <- defs
+          return (d:ds)
+   <|> do dv <- def
+          return [dv]
+   
+def :: Parser Def
+def = do iv <- ident
+         schar '='
+         cv <- curve
+         symbol "where"
+         schar '{'
+         dsv <- defs
+         schar '}'
+         return (Def iv cv dsv)
+  <|> do iv1 <- ident
+         schar '='
+         cv1 <- curve
+         return (Def iv1 cv1 [])
+  
+  
 curve :: Parser Curve
 curve = (do cv <- term
             rest cv )
         where rest cv = connect cv
            
 term :: Parser Curve
-term = point >>= return . Single
+term = curvePres
+     <|> (point >>= return . Single)
+    <|> (ident >>= return . Id)
 
-expr :: Parser Expr
-expr = add
-      <|> width
-      <|> height
+curvePres :: Parser Curve
+curvePres = do schar '('
+               c <- curve
+               schar ')'
+               return c 
+
 
 connect :: Curve -> Parser Curve
 connect cv = do symbol "++" 
                 ch <- curve
                 connect (Connect cv ch) 
             <|> over cv
-        
+
 over :: Curve -> Parser Curve
 over cv = do schar '^' 
              ch <- curve 
@@ -46,6 +69,7 @@ scale cv = do symbol "**"
               exprr <- expr
               connect (Scale cv exprr)
           <|> refv cv 
+
 
 refv :: Curve -> Parser Curve
 refv cv = do symbol "refv"
@@ -65,6 +89,13 @@ rot cv = do symbol "rot"
             connect (Rot cv exprr)
         <|> return cv 
 
+
+expr :: Parser Expr
+expr = add
+      <|> width
+      <|> height
+      <|> exprPar
+
 add    :: Parser Expr
 add    = mult   `chainl1` (schar '+' >> return Add)
 
@@ -80,6 +111,12 @@ height :: Parser Expr
 height = do symbol "height" 
             c <- curve
             return (Height c)
+            
+exprPar :: Parser Expr
+exprPar = do schar '('
+             e <- expr
+             schar ')'
+             return e 
 
 point :: Parser Point
 point = do schar '('
@@ -89,12 +126,11 @@ point = do schar '('
            schar ')'
            return (Point exprl exprr)
 
-ident :: Parser String
-ident = do iv <- idents
-           return iv
-           where idents = many1(satisfy (`elem` allowed)) 
-                 allowed    = '_':['a'..'z']++['A'..'Z']++['0'..'9']
-                 {- notallowed = ["where","refh","refv","rot","width","height"] -}
+ident :: Parser Ident
+ident = token (do iv <- idents
+                  return iv)
+                where idents = many1(satisfy (`elem` allowed))
+                      allowed = '_':['a'..'z']++['A'..'Z']++['0'..'9']
 
 number :: Parser Expr
 number = token (do pre <- digits
@@ -107,7 +143,7 @@ number = token (do pre <- digits
 
 {- type Error = String -}
 {- parseString :: String -> Either Error Program -}
-parseString input = parse (do exprv <- curve
+parseString input = parse (do exprv <- program
                               token eof
                               return exprv) input 
 

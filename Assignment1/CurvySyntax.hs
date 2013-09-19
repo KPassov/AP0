@@ -143,9 +143,10 @@ number = token (do pre <- digits
 
 {- type Error = String -}
 {- parseString :: String -> Either Error Program -}
-parseString input = parse (do exprv <- program
-                              token eof
-                              return exprv) input 
+parseString input = 
+  case parse (do {e <- program; token eof; return e}) input of 
+	  [(e, [])] -> Right e
+	  _			-> Left "parse error"
 
 {- parseFile :: FilePath -> IO (Either Error Program) -}
 {- parseFile _ = undef -}

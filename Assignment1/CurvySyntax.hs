@@ -1,4 +1,4 @@
-module CurvySyntax where
+module CurvySyntax (parseString) where
 
 import Data.Char(isDigit)
 import CurveAST
@@ -17,7 +17,7 @@ def = do iv <- ident
          cv <- curve
          symbol "where"
          schar '{'
-         dsv <- defs
+         dsv <- many1 def
          schar '}'
          return (Def iv cv dsv)
   <|> do iv1 <- ident

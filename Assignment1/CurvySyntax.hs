@@ -30,14 +30,21 @@ def = do iv <- ident
   
   
 curve :: Parser Curve
-curve = (do cv <- term
-            rest cv )
-        where rest cv = connect cv
+curve = Connect
+      
            
 term :: Parser Curve
 term = curvePres
-     <|> (point >>= return . Single)
+     <|> do pv <- point
+            po <- translate(Single pv)
+            return po
     <|> (ident >>= return . Id)
+   
+connect :: Parser Curve
+connect = over `chainl1` (symbol "++" >> return Connect)
+
+over :: Parser Curve
+over = term `chainl1` (schar '^' >> return Over)
 
 curvePres :: Parser Curve
 curvePres = do schar '('
@@ -46,47 +53,35 @@ curvePres = do schar '('
                return c 
 
 
-connect :: Curve -> Parser Curve
-connect cv = do symbol "++" 
-                ch <- curve
-                connect (Connect cv ch) 
-            <|> over cv
-
-over :: Curve -> Parser Curve
-over cv = do schar '^' 
-             ch <- curve 
-             connect (Over cv ch) 
-         <|> translate cv
-
 translate :: Curve -> Parser Curve
 translate cv = do symbol "->"
                   p <- point
-                  connect (Translate cv p)
+                  translate (Translate cv p)
               <|> scale cv 
 
 scale :: Curve -> Parser Curve
 scale cv = do symbol "**"
               exprr <- expr
-              connect (Scale cv exprr)
+              translate (Scale cv exprr)
           <|> refv cv 
 
 
 refv :: Curve -> Parser Curve
 refv cv = do symbol "refv"
              exprr <- expr
-             connect (Refv cv exprr)
+             translate (Refv cv exprr)
          <|> refh cv 
 
 refh :: Curve -> Parser Curve
 refh cv = do symbol "refh"
              exprr <- expr
-             connect (Refh cv exprr)
+             translate (Refh cv exprr)
          <|> rot cv 
 
 rot :: Curve -> Parser Curve
 rot cv = do symbol "rot"
             exprr <- expr
-            connect (Rot cv exprr)
+            translate (Rot cv exprr)
         <|> return cv 
 
 
@@ -150,3 +145,4 @@ parseString input =
 
 {- parseFile :: FilePath -> IO (Either Error Program) -}
 {- parseFile _ = undef -}
+

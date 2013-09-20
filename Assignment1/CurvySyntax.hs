@@ -8,12 +8,9 @@ program :: Parser [Def]
 program = defs
 
 defs :: Parser [Def]
-defs = do d <- def
-          ds <- defs
-          return (d:ds)
-   <|> do dv <- def
-          return [dv]
-   
+defs = do d <- many1 def
+          return d
+             
 def :: Parser Def
 def = do iv <- ident
          schar '='

@@ -3,6 +3,7 @@ module CurvySyntax where
 import Data.Char(isDigit)
 import CurveAST
 import SimpleParse
+import Control.Monad(liftM) 
 
 program :: Parser [Def]
 program = defs
@@ -30,14 +31,14 @@ def = do iv <- ident
   
   
 curve :: Parser Curve
-curve = (do cv <- term
-            rest cv )
-        where rest cv = connect cv
+curve = do cv <- term
+           rest cv 
+        where rest = connect
            
 term :: Parser Curve
 term = curvePres
-     <|> (point >>= return . Single)
-    <|> (ident >>= return . Id)
+     <|> liftM Single point
+     <|> liftM Id ident 
 
 curvePres :: Parser Curve
 curvePres = do schar '('
@@ -127,8 +128,7 @@ point = do schar '('
            return (Point exprl exprr)
 
 ident :: Parser Ident
-ident = token (do iv <- idents
-                  return iv)
+ident = token idents 
                 where idents = many1(satisfy (`elem` allowed))
                       allowed = '_':['a'..'z']++['A'..'Z']++['0'..'9']
 
@@ -139,14 +139,14 @@ number = token (do pre <- digits
                rest pre = do schar '.'
                              post <- digits
                              return $ Const $ read $ pre ++ "." ++ post
-                         <|> do return $ Const $ read $ pre 
+                         <|> do return $ Const $ read pre 
 
-{- type Error = String -}
-{- parseString :: String -> Either Error Program -}
+type Error = String
+parseString :: String -> Either Error Program
 parseString input = 
   case parse (do {e <- program; token eof; return e}) input of 
-	  [(e, [])] -> Right e
-	  _			-> Left "parse error"
+      [(e, [])] -> Right e
+      _	        -> Left "parse error"
 
 {- parseFile :: FilePath -> IO (Either Error Program) -}
 {- parseFile _ = undef -}

@@ -30,7 +30,7 @@ def = do iv <- ident
   
   
 curve :: Parser Curve
-curve = Connect
+curve = connect
       
            
 term :: Parser Curve
@@ -38,8 +38,10 @@ term = curvePres
      <|> do pv <- point
             po <- translate(Single pv)
             return po
-    <|> (ident >>= return . Id)
-   
+    <|> do iv <- ident
+           io <- translate(Id iv)
+           return io
+    
 connect :: Parser Curve
 connect = over `chainl1` (symbol "++" >> return Connect)
 

@@ -52,7 +52,8 @@ curvePres :: Parser Curve
 curvePres = do schar '('
                c <- curve
                schar ')'
-               return c 
+               io <- translate(c)
+               return io
 
 
 translate :: Curve -> Parser Curve

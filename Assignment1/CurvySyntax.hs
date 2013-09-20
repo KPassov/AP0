@@ -125,9 +125,14 @@ point = do schar '('
 
 ident :: Parser Ident
 ident = token (do iv <- idents
-                  return iv)
+                  if checkIdents iv
+                    then reject
+                    else return iv)
                 where idents = many1(satisfy (`elem` allowed))
+                      checkIdents s = s `elem` notallowed
                       allowed = '_':['a'..'z']++['A'..'Z']++['0'..'9']
+                      notallowed = ["where", "refv", "refh", "rot", "width","height"]
+                      
 
 number :: Parser Expr
 number = token (do pre <- digits

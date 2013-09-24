@@ -1,4 +1,4 @@
-module CurvySyntax where
+module CurvySyntax (parseString) where
 
 import Data.Char(isDigit)
 import CurveAST
@@ -8,19 +8,16 @@ program :: Parser [Def]
 program = defs
 
 defs :: Parser [Def]
-defs = do d <- def
-          ds <- defs
-          return (d:ds)
-   <|> do dv <- def
-          return [dv]
-   
+defs = do d <- many1 def
+          return d
+             
 def :: Parser Def
 def = do iv <- ident
          schar '='
          cv <- curve
          symbol "where"
          schar '{'
-         dsv <- defs
+         dsv <- many1 def
          schar '}'
          return (Def iv cv dsv)
   <|> do iv1 <- ident
@@ -52,7 +49,8 @@ curvePres :: Parser Curve
 curvePres = do schar '('
                c <- curve
                schar ')'
-               return c 
+               io <- translate(c)
+               return io
 
 
 translate :: Curve -> Parser Curve
@@ -125,9 +123,14 @@ point = do schar '('
 
 ident :: Parser Ident
 ident = token (do iv <- idents
-                  return iv)
+                  if checkIdents iv
+                    then reject
+                    else return iv)
                 where idents = many1(satisfy (`elem` allowed))
+                      checkIdents s = s `elem` notallowed
                       allowed = '_':['a'..'z']++['A'..'Z']++['0'..'9']
+                      notallowed = ["where", "refv", "refh", "rot", "width","height"]
+                      
 
 number :: Parser Expr
 number = token (do pre <- digits

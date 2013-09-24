@@ -1,4 +1,4 @@
-module CurvySyntax (parseString) where
+module CurvySyntax (parseString, parseFile, Error) where
 
 import Data.Char(isDigit)
 import CurveAST
@@ -148,6 +148,7 @@ parseString input =
 	  [(e, [])] -> Right e
 	  _			-> Left "parse error"
 
-{- parseFile :: FilePath -> IO (Either Error Program) -}
-{- parseFile _ = undef -}
+parseFile :: FilePath -> IO (Either Error Program)
+parseFile f = do s <- readFile f 
+                 return $ parseString s
 

@@ -138,8 +138,8 @@ number = token (do pre <- digits
                              return $ Const $ read $ pre ++ "." ++ post
                          <|> do return $ Const $ read $ pre 
 
-{- type Error = String -}
-{- parseString :: String -> Either Error Program -}
+type Error = String
+parseString :: String -> Either Error Program
 parseString input = 
   case parse (do {e <- program; token eof; return e}) input of 
 	  [(e, [])] -> Right e

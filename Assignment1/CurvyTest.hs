@@ -10,8 +10,8 @@ testStrings = ["c = (4.0,3)", -- Testing Curve, indent and tests the number can 
               ]
 
 failStrings :: [String]
-failStrings = ["where = (4.0,2.0)", -- where is not a valid indent
-               "(4.9,2.1)", -- trying to define a curve without Ident 
+failStrings = ["(4.9,2.1)", -- trying to define a curve without Ident 
+               "where = (4.0,2.0)", -- where is not a valid indent
                "a = (3.2,5.1", -- parser error
                "a = (4.3,2.4) ++ 5 + 2" -- type error
               ]

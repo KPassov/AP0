@@ -47,8 +47,17 @@ true _ = True
 
 type Environment = M.Map String SExp 
 
-lookupVar :: String -> Environment -> Maybe SExp
-lookupVar = M.lookup
+newtype APLispExec a = RC { runLisp :: Environment -> Maybe a }
+
+instance Monad APLispExec where
+  return x  = RC $ \_ -> Just x
+  m >>= f   = RC $ \env -> case runLisp m env of
+                             Nothing -> Nothing
+                             Just x -> runLisp (f x) env
+
+lookupVar :: String -> Environment -> APLispExec SExp 
+lookupVar = do exp <- M.lookup
+               return exp 
 
 bindvar :: String -> SExp -> Environment -> Environment
 bindvar = M.insert 
@@ -59,7 +68,6 @@ getVars = M.elems
 emptyEnv :: Environment
 emptyEnv = M.empty
 
-newtype APLispExec a = RC { runLisp :: Environment -> Maybe a }
 
 local :: (Environment -> Environment) -> APLispExec a -> APLispExec a
 local f m = RC $ \env -> let env' = f env

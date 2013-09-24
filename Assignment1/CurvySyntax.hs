@@ -1,4 +1,4 @@
-module CurvySyntax (parseString) where
+module CurvySyntax (parseString, parseFile, Error) where
 
 import Data.Char(isDigit)
 import CurveAST
@@ -145,13 +145,14 @@ number = token (do pre <- digits
                              return $ Const $ read $ pre ++ "." ++ post
                          <|> do return $ Const $ read $ pre 
 
-{- type Error = String -}
-{- parseString :: String -> Either Error Program -}
+type Error = String
+parseString :: String -> Either Error Program
 parseString input = 
   case parse (do {e <- program; token eof; return e}) input of 
 	  [(e, [])] -> Right e
 	  _			-> Left "parse error"
 
-{- parseFile :: FilePath -> IO (Either Error Program) -}
-{- parseFile _ = undef -}
+parseFile :: FilePath -> IO (Either Error Program)
+parseFile f = do s <- readFile f 
+                 return $ parseString s
 

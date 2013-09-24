@@ -1,0 +1,17 @@
+Presedence
+Presedence is handled by with chainl1 in the expr and by chaining the
+nonterminals. That is making the lower presedence expresion call the higher
+ones to create a syntax tree with the highest presendece operations lowest on
+the trees, thereby forcing them to evaluation first.
+
+Left recursion
+Left recursion is handled by poping the left side of the expresions and
+parsing the variable to the function that reads what operation is performed.
+
+Tests
+We made a test file called CurvyTest.hs that runs 5 tests that should parse
+and 4 that should not. The tests can be seen in CurvyTest.hs and it is commented what we
+tested for in each of the tests. The tests can be run with the function "test" 
+
+Syntax Tree
+

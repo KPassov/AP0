@@ -87,15 +87,19 @@ rot cv = do symbol "rot"
 
 expr :: Parser Expr
 expr = add
-      <|> width
-      <|> height
-      <|> exprPar
 
 add    :: Parser Expr
 add    = mult   `chainl1` (schar '+' >> return Add)
 
 mult   :: Parser Expr
-mult   = number `chainl1` (schar '*' >> return Mult)
+mult   = exprTerm `chainl1` (schar '*' >> return Mult)
+
+
+exprTerm :: Parser Expr
+exprTerm = number
+          <|> width
+          <|> height
+          <|> exprPar
 
 width  :: Parser Expr
 width  = do symbol "width" 

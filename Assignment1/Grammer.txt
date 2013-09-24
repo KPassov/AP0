@@ -3,8 +3,8 @@ Defs  ::= Def
        |  Def Defs
 Def   ::= Ident '=' Curve
        |  Ident '=' Curve 'where' '{' Defs '}'
-Curve ::= Curve' '++' Curve' 
-       |  Curve' '^' Curve'
+Curve ::= Curve' '++' Curve 
+       |  Curve' '^' Curve
 	   |  Curve' 
 	   
 Curve'::= CurveTerm CurveOpt
@@ -17,13 +17,13 @@ CurveOpt ::= '->' Point CurveOpt
            | '**' Expr CurveOpt
            | 'refv' Expr CurveOpt
            |  'refh' Expr CurveOpt
-           |  'rot' Expr CurveOpt
+           |  'rot' Expr CurveOpts
 		   | e
 		   
 Point ::= '(' Expr ',' Expr ')'
 
-Expr  ::= Expr' '+' Expr'
-       |  Expr' '*' Expr'
+Expr  ::= Expr' '+' Expr
+       |  Expr' '*' Expr
 	   |  Expr'
 	   
 Expr' ::= 'width' Curve

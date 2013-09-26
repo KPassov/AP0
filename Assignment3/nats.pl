@@ -39,10 +39,11 @@ mod(X,Y,Z) :- less(z,Y), minus(X,Y,H), mod(H,Y,Z).
 %%%---------------------------------------------------------------------
 
 % notprime(X) => X is not a prime
-%notprime( ... ) :- ...
+notprime(s(z)).
+notprime(X) :- less(s(z),Y), less(Y,X), mod(X,Y,z).
 
 % prime(X) => X is a prime
-%prime( ... ) :- ...
+%prime(
 
 % listPrimes(L,X) => L is the list of primes small than or equal to X
 %listPrimes( ... ) :- ...

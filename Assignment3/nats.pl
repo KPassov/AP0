@@ -28,10 +28,11 @@ add(s(X),Y,s(Z)) :- add(X, Y, Z).
 minus(X,Y,Z) :- add(Y,Z,X).
 
 % mult(X,Y,Z) => Z = X * Y
-%mult(X,Y,Z) :- 
+% mult(X,Y,Z) :- 
 
-% mod(X,Y,Z) => Z = X mod Y.
-% mod( ... ) :- ...
+% mod(X,Y,Z) => Z = X mod Y
+mod(Z,Y,Z) :- less(Z,Y).
+mod(X,Y,Z) :- less(z,Y), minus(X,Y,H), mod(H,Y,Z).
 
 %%%---------------------------------------------------------------------
 %%% Part 2:

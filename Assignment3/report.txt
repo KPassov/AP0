@@ -1,0 +1,15 @@
+Less, Add and minus should be correctly implemented, since they produces the correct output and works with any unknown variables. They terminate correctly without any additional backtracking.
+
+Mult will fail if X is unknown, this is due to mult being implemented as Y+Mult(X-1,Y). So after prolog will continue to evaluate with larger X values to find more possible solutions. 
+
+Mod is not correctly implemented, it will produce the correct result if Y is known. It also backtracks to a fail.
+
+notprime is not correctly called on a specific value will work correctly, called with an unknown variable it will skip the uneven numbers which are not primes.
+
+prime produces the correct result with both a known and unknown variable. 
+
+primelist will make the correct list and backtrack to make a lot of other possible solutions. It will not work if a list is given and Y is unknown
+
+Superprime does not work.
+
+Testing: Testing have been done on functions with Known and unknown parameters in all cases except ones which would lead to infinite recursion. The start_tests function will run thought all tests and return their result.

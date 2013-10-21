@@ -54,7 +54,7 @@ fishCoordinator(NextID, Qtree, Loop) ->
     end.
 
 fishLoop(Qtree) -> 
-    timer:sleep(1000),
+    timer:sleep(50),
     moveFishes(Qtree),
     attraRepul(Qtree),
     fishLoop(Qtree).
@@ -87,14 +87,14 @@ attraRepulCalc(Qtree,Fish1) ->
                      NewFish = updateChangeVector(Fish2,Repul),
                      NewFish;
                  (Distance >= 7) and (Distance =< 10) ->
-                     Attract = calculateAttraction(Fish2,Fish1),
+                     Attract = calculateAttraction(Fish1,Fish2),
                      NewFish = updateChangeVector(Fish2,Attract),
                      NewFish;
                  true -> 
                      Fish2
              end
         end,
-    quadtree:mapFunction(Qtree,Calc,universe).
+        quadtree:mapFunction(Qtree,Calc,{X-10,Y-10,X+10,Y+10}).
     
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -124,7 +124,7 @@ reply_ok(From) ->
 updateChangeVector(Fish, VelocityCV) ->
     {element, Pos, Prop} = Fish,
     {ID, Velocity, FishVCV, Nd} = Prop,
-    {element, Pos, {ID, Velocity, addVectors(FishVCV, VelocityCV), Nd + 1}}.
+    {element, Pos, {ID, Velocity, addVectors(FishVCV, VelocityCV), Nd + 1}}. 
 
 % Calculates the attraction velocity between the fish at the centre and
 % a fish that is expected to be in the attraction zone.
@@ -151,7 +151,7 @@ moveFish(Fish) ->
     {ID, {Vx, Vy}, {Dvx, Dvy}, Nd} = Prop,
     case Nd of
         0   -> Fish;
-        Ndd -> NewV = toMaxLenVector({Vx + Dvx/Nd, Vy + Dvy/Nd},3),
+        Nd  -> NewV = toMaxLenVector({Vx + Dvx/Nd, Vy + Dvy/Nd},3),
                {element, addVectors(Pos, NewV), {ID, NewV, {0,0}, 0}}
     end.
 
@@ -175,9 +175,12 @@ subtractVectors({X1,Y1},{X2,Y2}) ->
 
 % Transforms a vector to a unit length (vector of length = 1)
 toUnitVector(Vector) ->
-    Len = vectorLength(Vector),
-    {X,Y} = Vector,
-    {X/Len, Y/Len}.
+    Len = vectorLength(Vector), 
+    case Len == 0 of
+        true  -> Vector;
+        false -> {X,Y} = Vector,
+                 {X/Len, Y/Len} 
+    end.
 
 % Returns the length of a vector
 vectorLength(Vector) ->

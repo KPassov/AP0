@@ -63,11 +63,6 @@ rpc(Pid, Request) ->
 reply(From, Msg) ->
     From ! {self(), Msg}.
     
-reply_ok(From) ->
-    reply(From, ok).
-    
-reply_ok(From, Msg) ->
-    reply(From, {ok, Msg}).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Internal Implementation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -133,15 +128,17 @@ qtreeLeaf(Bound, Limit, Parent, Data) ->
     receive
         {addElement, {element, Pos, Prop}} ->
             case {outOfBound(Bound, {element, Pos, Prop}), length(Data) < Limit} of 
-                {false,true} -> qtreeLeaf(Bound, Limit, Parent, Data ++ [{element,Pos, Prop}]);
+                {false,true} -> qtreeLeaf(Bound, Limit, Parent, Data ++ [{element,Pos, Prop}]); %Limit is not reached and Data is inside Bound
                 {false,false}-> Children = spawnChildren(Bound, Limit, Parent, 
-                                                         Data ++ [{element,Pos,Prop}]),
+                                                         Data ++ [{element,Pos,Prop}]), %Limit is reached and the leaf needs to split into a node
                                 qtreeNode(Bound, Limit, Parent, Children);
-                {true,_} ->     send_add(Parent, {element, Pos, Prop}),
+                {true,_} ->     send_add(Parent, {element, Pos, Prop}), %Data is outside bound and is send to the parrent
                                 qtreeLeaf(Bound, Limit, Parent, Data)
             end;
         {mapTreeFun, MapTreeFun} ->
-            apply(MapTreeFun,[Bound]),
+            try apply(MapTreeFun,[Bound])
+            catch _:_ -> qtreeLeaf(Bound, Limit, Parent, Data)
+            end,
             qtreeLeaf(Bound, Limit, Parent, Data);
         {mapFun, {MapFun, MapBound}} -> 
             NewData = mapFunList(Data, MapBound, MapFun),
@@ -176,19 +173,21 @@ qtreeLeaf(Bound, Limit, Parent, Data) ->
 % Y
 
 %runs Fun on data if it is within Bound. Returns true if it evaluated
-mapFunList([], Bound, Fun)   -> [];
+mapFunList([], _, _)   -> [];
 mapFunList(Data, Bound, Fun) -> 
     Element = hd(Data),
     case outOfBound(Bound, Element) of
-        false -> NewData = apply(Fun, [Element]),
-                [NewData] ++ mapFunList(tl(Data),Bound,Fun);
+        false -> try NewData = apply(Fun, [Element]),
+                [NewData] ++ mapFunList(tl(Data),Bound,Fun)
+                 catch _:_ -> [Element]
+                 end;
         true  -> [Element] ++ mapFunList(tl(Data),Bound,Fun)
     end.
     
 sendIfIntersect(Pid, MapFun, PidBound, MapBound) ->
     case intersectBounds(PidBound, MapBound) of
         empty -> no_intersect;
-        A       -> send_mapFun(Pid, MapFun, MapBound)
+        _       -> send_mapFun(Pid, MapFun, MapBound)
     end.
 
     
@@ -213,8 +212,6 @@ spawnChildren(Bound, Limit, Parent, Data) ->
     C2 = spawn(fun() -> qtreeLeaf(createBound(ne, Bound), Limit, Parent, []) end),
     C3 = spawn(fun() -> qtreeLeaf(createBound(sw, Bound), Limit, Parent, []) end),
     C4 = spawn(fun() -> qtreeLeaf(createBound(se, Bound), Limit, Parent, []) end),
-    Bounds = {createBound(nw, Bound),createBound(ne, Bound),
-              createBound(sw, Bound),createBound(se, Bound)},
     distributData(Data, [C1,C2,C3,C4]).
     
 %distributes the data in the tree after the new children are spawned
@@ -225,8 +222,6 @@ distributData(Data, Children) ->
     end,
     distributData(tl(Data), Children).
     
-% List with quarters in the quadtree.
-qTreeQuarters() -> [nw,ne,sw,se].
 % Returns the 1/4 of Bound which is defined by Quarter from the list above.
 createBound(_, universe) -> universe;
 createBound(_, empty) -> empty;

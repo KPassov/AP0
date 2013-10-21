@@ -10,38 +10,35 @@ print(Qtree, Printer) ->
         end,
     quadtree:mapFunction(Qtree, MapFun, universe).
 
-printGrid(Qtree, Printer) ->
-    MapFun = 
-        fun (Bound) ->
-            swarmPrinter:addBox(Printer, Bound)
-        end,
-    quadtree:mapTreeFunction(Qtree, MapFun).
-
 run() ->
     {ok,Printer} = printer:start(),
-    {Qtree,Swarm} = swarm:run({0,0,64,64},1),
+    {Qtree,Swarm} = swarm:run({0,0,64,64},9),
 
-    swarm:newFish(Swarm, {32,32}),
-    swarm:newFish(Swarm, {30,30}),
-    swarm:newFish(Swarm, {30,32}),
-    swarm:newFish(Swarm, {32,30}),
     swarm:newFish(Swarm, {31,31}),
-    swarm:newFish(Swarm, {33,33}),
-    swarm:newFish(Swarm, {33,32}),
+    swarm:newFish(Swarm, {31,32}),
+    swarm:newFish(Swarm, {31,33}),
+    swarm:newFish(Swarm, {32,31}),
+    swarm:newFish(Swarm, {32,32}),
     swarm:newFish(Swarm, {32,33}),
+    swarm:newFish(Swarm, {33,31}),
+    swarm:newFish(Swarm, {33,32}),
+    swarm:newFish(Swarm, {33,33}),
+    swarm:newFish(Swarm, {43,43}),
+    swarm:newFish(Swarm, {31,22}),
 
     timer:sleep(100),
-    Loop = spawn(fun() -> theloop(Printer, Qtree) end). 
+    Loop = spawn(fun() -> theloop(Printer, Qtree) end), 
+    {Swarm, Loop}.
 
 stop(Swarm, Loop) ->
-    swarm:stop(Swarm), 
+    swarm:stop(Swarm),
     exit(Loop, normal).
 
 theloop(Printer, Qtree) -> 
     printer:reset(Printer,"swarm.svg"),
     print(Qtree, Printer),
-    timer:sleep(1000),
-    theloop(Printer, Qtree).
+    timer:sleep(100),
+    theloop(Printer, Qtree). 
 
     
 

@@ -9,7 +9,7 @@
 
 -module(swarmPrinter).
 
--export([start/0, reset/2, addBox/2, addCircle/2, addLine/3]).
+-export([start/0, reset/2, addBox/2, addCircle/3, addLine/3]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% asynchronous communication
@@ -40,8 +40,8 @@ addBox(Printer, Bound) ->
 	info(Printer, {box, Bound}).
 
 % Adds a circle at Pos with Size
-addCircle(Printer, Pos) -> 
-	info(Printer, {point, Pos, 2}).
+addCircle(Printer, Pos, Size) -> 
+	info(Printer, {point, Pos, Size}).
 
 % Adds a line from Pos1 to Pos2
 addLine(Printer, Pos1, Pos2) -> 

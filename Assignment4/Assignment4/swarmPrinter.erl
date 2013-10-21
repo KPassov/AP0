@@ -25,10 +25,6 @@ info(Pid, Msg) ->
 start() -> 
 	{ok, spawn(fun() -> printer("FileName.svg",0) end)}.
 
-% Stops the printer process
-stop(Printer) ->
-	info(Printer, stop).
-
 % Removes all content from the file Filename. 
 % Can both be used to set a new filename and to 
 % override the content of a current file.

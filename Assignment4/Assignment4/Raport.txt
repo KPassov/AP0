@@ -1,0 +1,44 @@
+quadtree:
+    Splitting when limit is exceeded:
+        When a new element is added to an already full leaf it creates 4 new
+        child processes and turn itself into a leaf. It then sends all its old 
+        data to itself using send_add to make sure the data is send to the 
+        right child. This is done to avoid sending the data to the top of the
+        tree.
+    
+    Data outside bound:
+        If a node or child receives data outside its bound(it could have been 
+        moved), it sends it back to its parent and not to the top. This is to 
+        avoid broadcasting to the entire tree. 
+
+    Sending data:
+        To ensure the data is send to the child with the correct bound, we
+        made a case for every leaf and node enabling other processes to ask
+        for the bound of process. This is used when a parent sends data and
+        needs to check which child has the bound the data is in.
+
+    Testing:
+        We used the printExample to create a few tests, which all behaved as
+        expected. We were unable to handle a number exceeding the limit of
+        elements in the same point. This makes the nodes multiply infinite.
+
+
+Swarm:
+	Fish:
+		To ensure a unique ID, we used a fish coordinator to create a new fish. 
+		The fish coordinator keeps a value with the number of fish in the quadtree,
+		this value is used to create the new ID and then incremented by 1.
+		
+	Calculating Fish movement:
+		When calculating a fish repulsion or attraction to another fish, we chose that a fish
+		will update its neighbor fish rather than it. There is a problem with some fish 
+		not being updated with a new velocity vector in each update, so the fish will not move
+		in that iteration. We are unable to find the cause of this issue.
+		
+	Testing:
+	    We used the framework from printExample and print to create our own
+        visiual tests. It creates a file swarm.svg that updates 10 times a
+        second to the current look of the swarm. more fish can be added during
+        the simulation using the swarm:newFish(Swarm, Pos). The run function
+        returns the PID's of the swarm and the loop {Swarm, Loop}, which is used when the 
+        simulation is stopped or fish are added. 

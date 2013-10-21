@@ -12,7 +12,7 @@
 %%%---------------------------------------------------------------------
 
 -module(swarm).
--export([run/2, newFish/2,attraRepul/1]).
+-export([run/2, newFish/2, stop/1]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% API Implementation
@@ -26,6 +26,8 @@ run(Bound, Limit) ->
 newFish(FishCoordinator, Pos) ->
     rpc(FishCoordinator, {create_fish, Pos}).
 
+stop(FishCoordinator) ->
+    FishCoordinator ! stop.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,14 +46,17 @@ fishCoordinator(NextID, Qtree, Loop) ->
         quadtree:addElement(Qtree, Pos, {NextID, {0,0},{0,0},0}),
         reply_ok(From),
         fishCoordinator(NextID + 1, Qtree, Loop);
-       A -> erlang:display(A),
-            fishCoordinator(NextID, Qtree, Loop)
+      stop ->
+        exit(Loop, normal),
+        quadtree:stop(Qtree);
+      A -> erlang:display(A),
+        fishCoordinator(NextID, Qtree, Loop)
     end.
 
 fishLoop(Qtree) -> 
-    timer:sleep(50),
-    %moveFishes(Qtree),
-    %attraRepul(Qtree),
+    timer:sleep(1000),
+    moveFishes(Qtree),
+    attraRepul(Qtree),
     fishLoop(Qtree).
     
 moveFishes(Qtree) ->
@@ -59,30 +64,37 @@ moveFishes(Qtree) ->
         fun(Fish) ->
             moveFish(Fish)
         end,
-    quadtree:mapTreeFunction(Qtree, MoveFish).
+    quadtree:mapFunction(Qtree, MoveFish, universe).
 
 attraRepul(Qtree) ->
     Iterator = 
         fun(Fish1) -> 
-            {_,{X,Y},{ID1,_,_,_}} = Fish1   , 
-            Test = 
-                fun(Fish2) ->
-                    {_,_,{ID2,_,_,_}} = Fish2,
-                    Distance = distanceFish(Fish1,Fish2),
-                    if ID1 == ID2 -> %Same fish
-                        Fish2;
-                    Distance =< 3 ->
-                        Repul = calculateRepulsion(Fish2,Fish1),
-                        Fish2;
-                    true -> 
-                        Fish2
-                    end
-                end,
-            {_,{X,Y},_} = Fish1   ,       
-            quadtree:mapFunction(Qtree,Test,{X-10,Y-10,X+10,Y+10}),
+            attraRepulCalc(Qtree,Fish1),
             Fish1
     end,
     quadtree:mapFunction(Qtree,Iterator,universe).
+    
+attraRepulCalc(Qtree,Fish1) ->
+    {_,{X,Y},{ID1,_,_,_}} = Fish1, 
+    Calc =
+        fun(Fish2) ->
+            {_,_,{ID2,_,_,_}} = Fish2,
+            Distance = distanceFish(Fish1,Fish2),
+             if  ID1 == ID2 -> %Same fish
+                     Fish1;
+                 Distance =< 3 ->
+                     Repul = calculateRepulsion(Fish2,Fish1),
+                     NewFish = updateChangeVector(Fish2,Repul),
+                     NewFish;
+                 (Distance >= 7) and (Distance =< 10) ->
+                     Attract = calculateAttraction(Fish2,Fish1),
+                     NewFish = updateChangeVector(Fish2,Attract),
+                     NewFish;
+                 true -> 
+                     Fish2
+             end
+        end,
+    quadtree:mapFunction(Qtree,Calc,universe).
     
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -137,8 +149,11 @@ calculateRepulsion(FishCentre, FishInRepulsionZone) ->
 moveFish(Fish) ->
     {element, Pos, Prop} = Fish,
     {ID, {Vx, Vy}, {Dvx, Dvy}, Nd} = Prop,
-    NewV = toMaxLenVector({Vx + Dvx/Nd, Vy + Dvy/Nd},3),
-    {element, addVectors(Pos, NewV), {ID, NewV, {0,0}, 0}}.
+    case Nd of
+        0   -> Fish;
+        Ndd -> NewV = toMaxLenVector({Vx + Dvx/Nd, Vy + Dvy/Nd},3),
+               {element, addVectors(Pos, NewV), {ID, NewV, {0,0}, 0}}
+    end.
 
 % Returns the distance between two fish
 distanceFish(Fish1, Fish2) ->
